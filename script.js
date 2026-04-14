@@ -844,15 +844,20 @@ const ItemMod = {
     const id         = document.getElementById('item-id').value;
     const holderType = document.getElementById('item-holder-type').value;
     const holderId   = ['player','npc'].includes(holderType) ? (document.getElementById('item-holder-id')?.value || '') : '';
-    const data = {
-      name,
-      description:  document.getElementById('item-desc').value.trim(),
-      image:        document.getElementById('item-image').value.trim(),
-      holderType,
-      holderId,
-      locationNote: holderType === 'location' ? document.getElementById('item-location-note').value.trim() : '',
-      updatedAt:    now(),
-    };
+         const data = {
+       name,
+       description:  document.getElementById('item-desc').value.trim(),
+       image:        document.getElementById('item-image').value.trim(),
+       holderType,
+       holderId,
+       locationNote: holderType === 'location' ? document.getElementById('item-location-note').value.trim() : '',
+       sheet: {
+         stats:     document.getElementById('item-sheet-stats').value.trim(),
+         abilities: document.getElementById('item-sheet-abilities').value.trim(),
+         notes:     document.getElementById('item-sheet-notes').value.trim(),
+       },
+       updatedAt:    now(),
+     };
     const items = Store.get('items');
     if (id) {
       const i = items.findIndex(x => x.id === id);
