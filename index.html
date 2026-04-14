@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Painel do Mestre RPG PRO</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ════════════════════════ SIDEBAR ════════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">⚔️</span>
+    <div class="logo-text">
+      <span class="logo-title">MESTRE</span>
+      <span class="logo-sub">RPG PRO</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <button class="nav-btn active" data-tab="players"       onclick="App.switchTab('players')">
+      <span class="nav-icon">👥</span><span class="nav-label">Jogadores</span>
+      <span class="nav-badge" id="badge-players">0</span>
+    </button>
+    <button class="nav-btn" data-tab="npcs"                 onclick="App.switchTab('npcs')">
+      <span class="nav-icon">🧑</span><span class="nav-label">NPCs</span>
+      <span class="nav-badge" id="badge-npcs">0</span>
+    </button>
+    <button class="nav-btn" data-tab="relationships"        onclick="App.switchTab('relationships')">
+      <span class="nav-icon">❤️</span><span class="nav-label">Relações</span>
+      <span class="nav-badge" id="badge-relationships">0</span>
+    </button>
+    <button class="nav-btn" data-tab="items"                onclick="App.switchTab('items')">
+      <span class="nav-icon">🎒</span><span class="nav-label">Itens</span>
+      <span class="nav-badge" id="badge-items">0</span>
+    </button>
+    <button class="nav-btn" data-tab="combat"               onclick="App.switchTab('combat')">
+      <span class="nav-icon">⚔️</span><span class="nav-label">Combate</span>
+      <span class="nav-badge" id="badge-combat">0</span>
+    </button>
+    <button class="nav-btn" data-tab="lore"                 onclick="App.switchTab('lore')">
+      <span class="nav-icon">📖</span><span class="nav-label">Lore</span>
+      <span class="nav-badge" id="badge-lore">0</span>
+    </button>
+    <button class="nav-btn" data-tab="notes"                onclick="App.switchTab('notes')">
+      <span class="nav-icon">📝</span><span class="nav-label">Notas</span>
+      <span class="nav-badge" id="badge-notes">0</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="session-info">
+      <span class="session-label">Sessão Ativa</span>
+      <span class="session-time" id="session-time">00:00:00</span>
+    </div>
+    <button class="btn-icon" title="Limpar tudo" onclick="App.confirmClearAll()">🗑️</button>
+  </div>
+</aside>
+
+<!-- ════════════════════════ MAIN ════════════════════════ -->
+<main class="main-content">
+
+  <!-- ══ JOGADORES ══ -->
+  <section class="tab-panel active" id="tab-players">
+    <div class="panel-header">
+      <div class="panel-title-wrap">
+        <h1>👥 Jogadores</h1>
+        <p class="panel-sub">Personagens controlados pelos jogadores da mesa</p>
+      </div>
+      <button class="btn-primary" onclick="PlayerMod.openModal()">+ Novo Jogador</button>
+    </div>
+    <div class="filter-bar">
+      <input type="text" id="player-search" placeholder="🔍 Buscar jogador..." class="search-input" oninput="PlayerMod.render()"/>
+    </div>
+    <div class="entity-grid" id="player-list"></div>
+    <div class="empty-state" id="player-empty">
+      <span class="empty-icon">🧙</span><p>Nenhum jogador cadastrado.</p>
+      <small>Clique em "Novo Jogador" para começar.</small>
+    </div>
+  </section>
+
+  <!-- ══ NPCs ══ -->
+  <section class="tab-panel" id="tab-npcs">
+    <div class="panel-header">
+      <div class="panel-title-wrap">
+        <h1>🧑 NPCs</h1>
+        <p class="panel-sub">Personagens controlados pelo mestre</p>
+      </div>
+      <button class="btn-primary" onclick="NpcMod.openModal()">+ Novo NPC</button>
+    </div>
+    <div class="filter-bar">
+      <input type="text" id="npc-search" placeholder="🔍 Buscar NPC..." class="search-input" oninput="NpcMod.render()"/>
+      <div class="chip-group">
+        <button class="chip active" data-nf="all"       onclick="NpcMod.setFilter('all',this)">Todos</button>
+        <button class="chip" data-nf="principal"        onclick="NpcMod.setFilter('principal',this)">⭐ Principais</button>
+        <button class="chip" data-nf="secundario"       onclick="NpcMod.setFilter('secundario',this)">· Secundários</button>
+        <button class="chip" data-nf="aliado"           onclick="NpcMod.setFilter('aliado',this)">🟢 Aliados</button>
+        <button class="chip" data-nf="inimigo"          onclick="NpcMod.setFilter('inimigo',this)">🔴 Inimigos</button>
+        <button class="chip" data-nf="hostil"           onclick="NpcMod.setFilter('hostil',this)">⚠️ Hostis</button>
+      </div>
+    </div>
+    <div class="group-section">
+      <div class="group-label">⭐ Principais</div>
+      <div class="entity-grid" id="npc-list-principal"></div>
+      <div class="group-label" style="margin-top:28px">· Secundários</div>
+      <div class="entity-grid" id="npc-list-secundario"></div>
+    </div>
+    <div class="empty-state" id="npc-empty">
+      <span class="empty-icon">🏰</span><p>Nenhum NPC encontrado.</p>
+    </div>
+  </section>
+
+  <!-- ══ RELACIONAMENTOS ══ -->
+  <section class="tab-panel" id="tab-relationships">
+    <div class="panel-header">
+      <div class="panel-title-wrap">
+        <h1>❤️ Relacionamentos</h1>
+        <p class="panel-sub">Afinidade e vínculos entre NPCs e jogadores</p>
+      </div>
+    </div>
+    <div class="rel-layout">
+      <!-- Painel esquerdo: lista de NPCs -->
+      <div class="rel-npc-panel">
+        <div class="rel-panel-title">Selecionar NPC</div>
+        <input type="text" id="rel-npc-search" class="search-input" placeholder="🔍 Buscar..." oninput="RelMod.renderNpcList()" style="margin-bottom:12px"/>
+        <div id="rel-npc-list"></div>
+        <div class="empty-col-msg" id="rel-npc-empty">Nenhum NPC cadastrado.</div>
+      </div>
+      <!-- Painel direito: jogadores + relações -->
+      <div class="rel-players-panel">
+        <div id="rel-content">
+          <div class="rel-placeholder">
+            <span>👈</span>
+            <p>Selecione um NPC para ver e editar seus relacionamentos com os jogadores.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ ITENS ══ -->
+  <section class="tab-panel" id="tab-items">
+    <div class="panel-header">
+      <div class="panel-title-wrap">
+        <h1>🎒 Itens & Equipamentos</h1>
+        <p class="panel-sub">Gerencie itens, posse e localização</p>
+      </div>
+      <button class="btn-primary" onclick="ItemMod.openModal()">+ Novo Item</button>
+    </div>
+    <div class="filter-bar">
+      <input type="text" id="item-search" placeholder="🔍 Buscar item..." class="search-input" oninput="ItemMod.render()"/>
+      <div class="chip-group">
+        <button class="chip active" data-if="all"      onclick="ItemMod.setFilter('all',this)">Todos</button>
+        <button class="chip" data-if="player"          onclick="ItemMod.setFilter('player',this)">👤 Com jogador</button>
+        <button class="chip" data-if="npc"             onclick="ItemMod.setFilter('npc',this)">🧑 Com NPC</button>
+        <button class="chip" data-if="location"        onclick="ItemMod.setFilter('location',this)">📍 Em local</button>
+        <button class="chip" data-if="none"            onclick="ItemMod.setFilter('none',this)">📦 Sem dono</button>
+      </div>
+    </div>
+    <div class="entity-grid" id="item-list"></div>
+    <div class="empty-state" id="item-empty">
+      <span class="empty-icon">📦</span><p>Nenhum item cadastrado.</p>
+      <small>Clique em "Novo Item" para começar.</small>
+    </div>
+  </section>
+
+  <!-- ══ COMBATE ══ -->
+  <section class="tab-panel" id="tab-combat">
+    <div class="panel-header">
+      <div class="panel-title-wrap">
+        <h1>⚔️ Ordem de Iniciativa</h1>
+        <p class="panel-sub">Gerencie o combate turno a turno</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-primary"   onclick="CombatMod.openModal()">+ Combatente</button>
+        <button class="btn-danger"    onclick="CombatMod.reset()">🔄 Reset</button>
+      </div>
+    </div>
+    <div class="round-display">
+      <div class="round-inner">
+        <span class="round-label">RODADA</span>
+        <span class="round-number" id="round-number">1</span>
+      </div>
+      <div class="turn-controls">
+        <button class="turn-btn prev" onclick="CombatMod.prevTurn()">◀ Anterior</button>
+        <button class="turn-btn next" onclick="CombatMod.nextTurn()">Próximo ▶</button>
+      </div>
+    </div>
+    <div class="combat-columns">
+      <div class="combat-col">
+        <div class="combat-col-header">👥 Jogadores</div>
+        <div id="combat-players-list"></div>
+        <div class="empty-col-msg" id="combat-players-empty">Nenhum jogador adicionado.</div>
+      </div>
+      <div class="combat-col-divider"></div>
+      <div class="combat-col">
+        <div class="combat-col-header">🧑 NPCs / Criaturas</div>
+        <div id="combat-npcs-list"></div>
+        <div class="empty-col-msg" id="combat-npcs-empty">Nenhum NPC adicionado.</div>
+      </div>
+    </div>
+    <div class="empty-state" id="combat-empty">
+      <span class="empty-icon">🗡️</span><p>Nenhum combatente.</p>
+      <small>Adicione combatentes para iniciar o combate.</small>
+    </div>
+  </section>
+
+  <!-- ══ LORE ══ -->
+  <section class="tab-panel" id="tab-lore">
+    <div class="panel-header">
+      <div class="panel-title-wrap">
+        <h1>📖 Lore & Relações</h1>
+        <p class="panel-sub">Diário global, organizações e vínculos narrativos</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-secondary" onclick="LoreMod.openOrgModal()">🏛 Nova Org.</button>
+        <button class="btn-primary"   onclick="LoreMod.openLogModal()">+ Entrada no Diário</button>
+      </div>
+    </div>
+    <div class="lore-layout">
+      <div class="lore-main">
+        <div class="section-heading">📚 Diário Global do Mestre</div>
+        <input type="text" id="log-search" class="search-input" placeholder="🔍 Buscar entradas..." oninput="LoreMod.renderLogs()" style="margin-bottom:16px"/>
+        <div id="log-list"></div>
+        <div class="empty-state" id="log-empty"><span class="empty-icon">📜</span><p>Nenhuma entrada no diário.</p></div>
+      </div>
+      <div class="lore-sidebar-col">
+        <div class="lore-widget">
+          <div class="lore-widget-title">🏛 Organizações</div>
+          <div id="org-list"></div>
+          <div class="empty-col-msg" id="org-empty">Nenhuma organização.</div>
+        </div>
+        <div class="lore-widget" style="margin-top:20px">
+          <div class="lore-widget-title">🔗 Perfis de Relação</div>
+          <div id="lore-profile-list"></div>
+          <div class="empty-col-msg" id="lore-profile-empty">Nenhum perfil criado.</div>
+          <button class="btn-ghost" style="width:100%;margin-top:12px" onclick="LoreMod.openProfileModal()">+ Novo Perfil</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ NOTAS ══ -->
+  <section class="tab-panel" id="tab-notes">
+    <div class="panel-header">
+      <div class="panel-title-wrap">
+        <h1>📝 Notas da Sessão</h1>
+        <p class="panel-sub">Registre eventos, locais e personagens importantes</p>
+      </div>
+      <button class="btn-primary" onclick="NoteMod.openModal()">+ Nova Nota</button>
+    </div>
+    <div class="filter-bar">
+      <input type="text" id="note-search" placeholder="🔍 Buscar nota..." class="search-input" oninput="NoteMod.render()"/>
+      <div class="chip-group">
+        <button class="chip active" data-filter="all"    onclick="NoteMod.setFilter('all',this)">Todas</button>
+        <button class="chip" data-filter="Evento"        onclick="NoteMod.setFilter('Evento',this)">⚡ Evento</button>
+        <button class="chip" data-filter="NPC"           onclick="NoteMod.setFilter('NPC',this)">🧑 NPC</button>
+        <button class="chip" data-filter="Local"         onclick="NoteMod.setFilter('Local',this)">🗺️ Local</button>
+        <button class="chip" data-filter="Outro"         onclick="NoteMod.setFilter('Outro',this)">📌 Outro</button>
+      </div>
+    </div>
+    <div class="notes-grid" id="notes-list"></div>
+    <div class="empty-state" id="notes-empty">
+      <span class="empty-icon">📜</span><p>Nenhuma nota registrada.</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ════════════════════════ MODAIS ════════════════════════ -->
+
+<!-- Jogador -->
+<div class="modal-overlay" id="modal-player" onclick="UI.closeOnOverlay(event,'modal-player')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="player-modal-title">👥 Novo Jogador</h2>
+      <button class="modal-close" onclick="UI.closeModal('modal-player')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="player-id"/>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Avatar (URL)</label>
+          <div class="img-input-row">
+            <input type="text" id="player-image" placeholder="https://..." class="form-input" oninput="UI.previewImg('player-image','player-img-prev','player-img-ph')"/>
+            <div class="img-thumb-wrap" onclick="UI.openLightbox(document.getElementById('player-img-prev').src)">
+              <img id="player-img-prev" class="img-thumb" src="" style="display:none"/>
+              <span id="player-img-ph" class="img-ph">👤</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group"><label>Nome do Personagem *</label><input type="text" id="player-charname" placeholder="Aria Ventemblue" class="form-input"/></div>
+        <div class="form-group"><label>Nome do Jogador</label><input type="text" id="player-playername" placeholder="Lucas" class="form-input"/></div>
+        <div class="form-group full"><label>Notas</label><textarea id="player-notes" placeholder="Classe, raça, background..." class="form-input" rows="3"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost"   onclick="UI.closeModal('modal-player')">Cancelar</button>
+      <button class="btn-primary" onclick="PlayerMod.save()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- NPC -->
+<div class="modal-overlay" id="modal-npc" onclick="UI.closeOnOverlay(event,'modal-npc')">
+  <div class="modal modal-large" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="npc-modal-title">✨ Novo NPC</h2>
+      <button class="modal-close" onclick="UI.closeModal('modal-npc')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="npc-id"/>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Avatar (URL)</label>
+          <div class="img-input-row">
+            <input type="text" id="npc-image" placeholder="https://..." class="form-input" oninput="UI.previewImg('npc-image','npc-img-prev','npc-img-ph')"/>
+            <div class="img-thumb-wrap" onclick="UI.openLightbox(document.getElementById('npc-img-prev').src)">
+              <img id="npc-img-prev" class="img-thumb" src="" style="display:none"/>
+              <span id="npc-img-ph" class="img-ph">🧑</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group"><label>Nome *</label><input type="text" id="npc-name" placeholder="Gareth, o Ferreiro" class="form-input"/></div>
+        <div class="form-group"><label>Importância</label>
+          <select id="npc-importance" class="form-input">
+            <option value="secundario">· Secundário</option>
+            <option value="principal">⭐ Principal</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Alinhamento</label>
+          <select id="npc-alignment" class="form-input">
+            <option value="neutro">⚪ Neutro</option>
+            <option value="aliado">🟢 Aliado</option>
+            <option value="inimigo">🔴 Inimigo</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Hostilidade</label>
+          <select id="npc-hostility" class="form-input">
+            <option value="nao_hostil">😐 Não Hostil</option>
+            <option value="hostil">⚠️ Hostil</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Status</label>
+          <select id="npc-status" class="form-input">
+            <option value="Vivo">💚 Vivo</option>
+            <option value="Inconsciente">💛 Inconsciente</option>
+            <option value="Morto">💀 Morto</option>
+          </select>
+        </div>
+        <div class="form-group"><label>HP Atual</label><input type="number" id="npc-hp" placeholder="30" class="form-input" min="0"/></div>
+        <div class="form-group"><label>HP Máximo</label><input type="number" id="npc-hp-max" placeholder="45" class="form-input" min="1"/></div>
+        <div class="form-group full"><label>Tags</label><input type="text" id="npc-tags" placeholder="guerreiro, comerciante..." class="form-input"/></div>
+        <div class="form-group full"><label>Descrição / Lore</label><textarea id="npc-desc" class="form-input" rows="3"></textarea></div>
+      </div>
+      <div class="form-divider">📋 Ficha do NPC</div>
+      <div class="form-grid">
+        <div class="form-group full"><label>Stats</label><textarea id="npc-sheet-stats" placeholder="FOR 16, DES 12... | CA: 15" class="form-input" rows="2"></textarea></div>
+        <div class="form-group full"><label>Habilidades / Ataques</label><textarea id="npc-sheet-abilities" placeholder="Espada: +5 acerto, 1d8+3 dano" class="form-input" rows="3"></textarea></div>
+        <div class="form-group full"><label>Notas Táticas</label><textarea id="npc-sheet-notes" placeholder="Fraquezas, resistências..." class="form-input" rows="2"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost"   onclick="UI.closeModal('modal-npc')">Cancelar</button>
+      <button class="btn-primary" onclick="NpcMod.save()">💾 Salvar NPC</button>
+    </div>
+  </div>
+</div>
+
+<!-- NPC Detalhes -->
+<div class="modal-overlay" id="modal-npc-detail" onclick="UI.closeOnOverlay(event,'modal-npc-detail')">
+  <div class="modal modal-xlarge" onclick="event.stopPropagation()">
+    <div class="modal-header" id="detail-header">
+      <h2 id="detail-name">NPC</h2>
+      <button class="modal-close" onclick="UI.closeModal('modal-npc-detail')">✕</button>
+    </div>
+    <div class="detail-tabs" id="detail-tabs">
+      <button class="detail-tab active" onclick="NpcMod.switchDetailTab('info',this)">📄 Info</button>
+      <button class="detail-tab"        onclick="NpcMod.switchDetailTab('sheet',this)">📋 Ficha</button>
+      <button class="detail-tab"        onclick="NpcMod.switchDetailTab('relations',this)">🔗 Relações</button>
+      <button class="detail-tab"        onclick="NpcMod.switchDetailTab('items',this)">🎒 Itens</button>
+    </div>
+    <div class="modal-body" id="detail-body"></div>
+    <div class="modal-footer">
+      <button class="btn-ghost"     onclick="UI.closeModal('modal-npc-detail')">Fechar</button>
+      <button class="btn-secondary" id="detail-combat-btn">⚔️ Ao Combate</button>
+      <button class="btn-primary"   id="detail-edit-btn">✏️ Editar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Item -->
+<div class="modal-overlay" id="modal-item" onclick="UI.closeOnOverlay(event,'modal-item')">
+  <div class="modal modal-large" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="item-modal-title">🎒 Novo Item</h2>
+      <button class="modal-close" onclick="UI.closeModal('modal-item')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="item-id"/>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Imagem (URL)</label>
+          <div class="img-input-row">
+            <input type="text" id="item-image" placeholder="https://..." class="form-input" oninput="UI.previewImg('item-image','item-img-prev','item-img-ph')"/>
+            <div class="img-thumb-wrap" onclick="UI.openLightbox(document.getElementById('item-img-prev').src)">
+              <img id="item-img-prev" class="img-thumb" src="" style="display:none"/>
+              <span id="item-img-ph" class="img-ph">📦</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group full"><label>Nome *</label><input type="text" id="item-name" placeholder="Espada Longa +1" class="form-input"/></div>
+        <div class="form-group full"><label>Descrição</label><textarea id="item-desc" placeholder="Bônus, propriedades, história..." class="form-input" rows="3"></textarea></div>
+        <div class="form-group full">
+          <label>Posse</label>
+          <select id="item-holder-type" class="form-input" onchange="ItemMod.toggleHolderSelect()">
+            <option value="none">📦 Sem dono</option>
+            <option value="player">👤 Com jogador</option>
+            <option value="npc">🧑 Com NPC</option>
+            <option value="location">📍 Em local</option>
+          </select>
+        </div>
+        <div class="form-group full hidden" id="item-holder-select-wrap">
+          <label id="item-holder-label">Selecionar</label>
+          <select id="item-holder-id" class="form-input"></select>
+        </div>
+        <div class="form-group full hidden" id="item-location-wrap">
+          <label>Local</label>
+          <input type="text" id="item-location-note" placeholder="Ex: Baú da taverna, cofre do rei..." class="form-input"/>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost"   onclick="UI.closeModal('modal-item')">Cancelar</button>
+      <button class="btn-primary" onclick="ItemMod.save()">💾 Salvar Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- Combatente -->
+<div class="modal-overlay" id="modal-combatant" onclick="UI.closeOnOverlay(event,'modal-combatant')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2>⚔️ Adicionar ao Combate</h2>
+      <button class="modal-close" onclick="UI.closeModal('modal-combatant')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tabs">
+        <button class="modal-tab active" data-ct="manual" onclick="CombatMod.switchTab('manual',this)">Manual</button>
+        <button class="modal-tab" data-ct="player"        onclick="CombatMod.switchTab('player',this)">Jogador</button>
+        <button class="modal-tab" data-ct="npc"           onclick="CombatMod.switchTab('npc',this)">NPC</button>
+      </div>
+      <div id="ct-manual">
+        <div class="form-grid">
+          <div class="form-group full"><label>Nome *</label><input type="text" id="comb-name" placeholder="Dragonete de Fogo" class="form-input"/></div>
+          <div class="form-group full"><label>Iniciativa *</label><input type="number" id="comb-init" placeholder="18" class="form-input"/></div>
+          <div class="form-group"><label>HP Atual</label><input type="number" id="comb-hp" placeholder="40" class="form-input" min="0"/></div>
+          <div class="form-group"><label>HP Máximo</label><input type="number" id="comb-hp-max" placeholder="40" class="form-input" min="1"/></div>
+        </div>
+      </div>
+      <div id="ct-player" class="hidden">
+        <div class="form-grid">
+          <div class="form-group full"><label>Jogador</label><select id="comb-player-sel" class="form-input"></select></div>
+          <div class="form-group full"><label>Iniciativa *</label><input type="number" id="comb-player-init" placeholder="Role os dados!" class="form-input"/></div>
+        </div>
+      </div>
+      <div id="ct-npc" class="hidden">
+        <div class="form-grid">
+          <div class="form-group full"><label>NPC</label><select id="comb-npc-sel" class="form-input"></select></div>
+          <div class="form-group full"><label>Iniciativa *</label><input type="number" id="comb-npc-init" placeholder="Role os dados!" class="form-input"/></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost"   onclick="UI.closeModal('modal-combatant')">Cancelar</button>
+      <button class="btn-primary" onclick="CombatMod.save()">⚔️ Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Nota -->
+<div class="modal-overlay" id="modal-note" onclick="UI.closeOnOverlay(event,'modal-note')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="note-modal-title">📝 Nova Nota</h2>
+      <button class="modal-close" onclick="UI.closeModal('modal-note')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="note-id"/>
+      <div class="form-grid">
+        <div class="form-group"><label>Tipo</label>
+          <select id="note-type" class="form-input">
+            <option value="Evento">⚡ Evento</option>
+            <option value="NPC">🧑 NPC</option>
+            <option value="Local">🗺️ Local</option>
+            <option value="Outro">📌 Outro</option>
+          </select>
+        </div>
+        <div class="form-group full"><label>Conteúdo *</label><textarea id="note-content" placeholder="Escreva sua nota..." class="form-input" rows="6"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost"   onclick="UI.closeModal('modal-note')">Cancelar</button>
+      <button class="btn-primary" onclick="NoteMod.save()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Organização -->
+<div class="modal-overlay" id="modal-org" onclick="UI.closeOnOverlay(event,'modal-org')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="org-modal-title">🏛 Nova Organização</h2>
+      <button class="modal-close" onclick="UI.closeModal('modal-org')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="org-id"/>
+      <div class="form-grid">
+        <div class="form-group full"><label>Nome *</label><input type="text" id="org-name" class="form-input"/></div>
+        <div class="form-group full"><label>Descrição</label><textarea id="org-desc" class="form-input" rows="3"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost"   onclick="UI.closeModal('modal-org')">Cancelar</button>
+      <button class="btn-primary" onclick="LoreMod.saveOrg()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Diário do Mestre -->
+<div class="modal-overlay" id="modal-log" onclick="UI.closeOnOverlay(event,'modal-log')">
+  <div class="modal modal-large" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="log-modal-title">📚 Nova Entrada</h2>
+      <button class="modal-close" onclick="UI.closeModal('modal-log')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="log-id"/>
+      <div class="form-grid">
+        <div class="form-group full"><label>Título *</label><input type="text" id="log-title" class="form-input"/></div>
+        <div class="form-group full"><label>Conteúdo *</label><textarea id="log-content" class="form-input" rows="7"></textarea></div>
+        <div class="form-group full"><label>NPCs Relacionados (Ctrl+clique)</label><select id="log-npcs" class="form-input" multiple style="height:90px"></select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost"   onclick="UI.closeModal('modal-log')">Cancelar</button>
+      <button class="btn-primary" onclick="LoreMod.saveLog()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Perfil Lore -->
+<div class="modal-overlay" id="modal-lore-profile" onclick="UI.closeOnOverlay(event,'modal-lore-profile')">
+  <div class="modal modal-large" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="lore-profile-title">🔗 Perfil de Relação</h2>
+      <button class="modal-close" onclick="UI.closeModal('modal-lore-profile')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="lore-profile-id"/>
+      <div class="form-grid">
+        <div class="form-group full"><label>NPC Central *</label><select id="lore-profile-npc" class="form-input"></select></div>
+        <div class="form-group full"><label>Aliados (Ctrl+clique)</label><select id="lore-profile-allies" class="form-input" multiple style="height:90px"></select></div>
+        <div class="form-group full"><label>Inimigos (Ctrl+clique)</label><select id="lore-profile-enemies" class="form-input" multiple style="height:90px"></select></div>
+        <div class="form-group full"><label>Orgs. Aliadas (Ctrl+clique)</label><select id="lore-profile-allied-orgs" class="form-input" multiple style="height:70px"></select></div>
+        <div class="form-group full"><label>Orgs. Conhecidas (Ctrl+clique)</label><select id="lore-profile-known-orgs" class="form-input" multiple style="height:70px"></select></div>
+        <div class="form-group full"><label>Tags</label><input type="text" id="lore-profile-tags" placeholder="lider, traidor..." class="form-input"/></div>
+        <div class="form-group full"><label>Notas / Diário</label><textarea id="lore-profile-notes" class="form-input" rows="4"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost"   onclick="UI.closeModal('modal-lore-profile')">Cancelar</button>
+      <button class="btn-primary" onclick="LoreMod.saveProfile()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmação -->
+<div class="modal-overlay" id="modal-confirm" onclick="UI.closeOnOverlay(event,'modal-confirm')">
+  <div class="modal modal-small" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="confirm-title">⚠️ Confirmar</h2>
+      <button class="modal-close" onclick="UI.closeModal('modal-confirm')">✕</button>
+    </div>
+    <div class="modal-body"><p id="confirm-msg" class="confirm-msg"></p></div>
+    <div class="modal-footer">
+      <button class="btn-ghost"  onclick="UI.closeModal('modal-confirm')">Cancelar</button>
+      <button class="btn-danger" id="confirm-ok-btn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox (ampliar imagem) -->
+<div class="lightbox-overlay" id="lightbox" onclick="UI.closeLightbox()">
+  <div class="lightbox-inner" onclick="event.stopPropagation()">
+    <button class="lightbox-close" onclick="UI.closeLightbox()">✕</button>
+    <img id="lightbox-img" src="" alt=""/>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+<script src="script.js"></script>
+</body>
+</html>
