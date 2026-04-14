@@ -830,6 +830,10 @@ const ItemMod = {
         if (sel) sel.value = it.holderId;
       }
       if (it.locationNote) document.getElementById('item-location-note').value = it.locationNote;
+              document.getElementById('item-sheet-stats').value     = it.sheet?.stats     || '';
+       document.getElementById('item-sheet-abilities').value = it.sheet?.abilities || '';
+       document.getElementById('item-sheet-notes').value     = it.sheet?.notes     || '';
+       
     }
     UI.openModal('modal-item');
   },
