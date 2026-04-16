@@ -384,11 +384,12 @@ const NpcMod = {
   openModal(id = null) {
     const isEdit = id != null;
     document.getElementById('npc-modal-title').textContent = isEdit ? '✏️ Editar NPC' : '✨ Novo NPC';
-    UI.clearForm(['npc-id','npc-image','npc-name','npc-tags','npc-desc','npc-hp','npc-hp-max','npc-sheet-stats','npc-sheet-abilities','npc-sheet-notes']);
+    UI.clearForm(['npc-id','npc-image','npc-name','npc-tags','npc-desc','npc-hp','npc-hp-max','npc-sheet-stats','npc-sheet-abilities','npc-sheet-notes','npc-boss']);
     document.getElementById('npc-importance').value = 'secundario';
     document.getElementById('npc-alignment').value  = 'neutro';
     document.getElementById('npc-hostility').value  = 'nao_hostil';
     document.getElementById('npc-status').value     = 'Vivo';
+    document.getElementById('npc-boss').checked     = false;
     UI.resetImgPreview('npc-img-prev','npc-img-ph');
     if (isEdit) {
       const n = Store.get('npcs').find(x => x.id === id);
@@ -408,6 +409,7 @@ const NpcMod = {
       document.getElementById('npc-sheet-abilities').value = n.sheet?.abilities || '';
       document.getElementById('npc-sheet-notes').value     = n.sheet?.notes     || '';
       if (n.image) UI.previewImg('npc-image','npc-img-prev','npc-img-ph');
+      document.getElementById('npc-boss').checked = n.boss || false;
     }
     UI.openModal('modal-npc');
   },
@@ -426,6 +428,7 @@ const NpcMod = {
       hostility:   document.getElementById('npc-hostility').value,
       status:      document.getElementById('npc-status').value,
       hp, hpMax,
+      boss:        document.getElementById('npc-boss').checked,
       tags:        document.getElementById('npc-tags').value.trim(),
       description: document.getElementById('npc-desc').value.trim(),
       sheet: {
@@ -489,6 +492,7 @@ const NpcMod = {
         if (f === 'aliado'     && n.alignment  !== 'aliado')     return;
         if (f === 'inimigo'    && n.alignment  !== 'inimigo')    return;
         if (f === 'hostil'     && n.hostility  !== 'hostil')     return;
+        if (f === 'boss'       && !n.boss)                       return;
       }
       lists[n.importance === 'principal' ? 'principal' : 'secundario'].push(n);
     });
